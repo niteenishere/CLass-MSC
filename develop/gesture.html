@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Mode - 3D Particles</title>
+    <link rel="stylesheet" href="css/global.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="debug-log">
+        <b>SYSTEM STATUS:</b><br>
+        1. Script Loaded: OK<br>
+    </div>
+    
+    <div id="video-container">
+        <video id="input_video" playsinline autoplay muted></video>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
+
+        // --- Logging Helper ---
+        const logDiv = document.getElementById('debug-log');
+        function log(msg) {
+            logDiv.innerHTML += `> ${msg}<br>`;
+            console.log(msg);
+        }
+
+        // --- Variables ---
+        let scene, camera, renderer, particles, testCube;
+        let handX = 0, handY = 0;
+        let targetPositions, currentPositions;
+        const PARTICLE_COUNT = 5000; // Lower count for safety
+        
+        // Shapes Data
+        const SHAPES = { CLOUD: [], SPHERE: [], HEART: [], FACE: [] };
+        let currentGesture = 'CLOUD';
+
+        // --- 1. Initialize Three.js IMMEDIATELY ---
+        try {
+            log("Initializing 3D Scene...");
+            initThree();
+            log("Generating Particle Shapes...");
+            generateShapes();
+            log("Starting Animation Loop...");
+            animate(); // Start rendering BEFORE camera loads
+            log("Initializing Camera (MediaPipe)...");
+            initMediaPipe();
+        } catch (e) {
+            log("CRITICAL ERROR: " + e.message);
+        }
+
+        function initThree() {
+            scene = new THREE.Scene();
+            // Add lights just in case materials need it
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0); // Transparent background
+            document.body.appendChild(renderer.domElement);
+
+            // SANITY CHECK OBJECT: RED CUBE
+            const cubeGeo = new THREE.BoxGeometry(2, 2, 2);
+            const cubeMat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+            testCube = new THREE.Mesh(cubeGeo, cubeMat);
+            scene.add(testCube);
+
+            // PARTICLES
+            const geometry = new THREE.BufferGeometry();
+            currentPositions = new Float32Array(PARTICLE_COUNT * 3);
+            targetPositions = new Float32Array(PARTICLE_COUNT * 3);
+            
+            // Fill initial positions
+            for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+                currentPositions[i] = (Math.random() - 0.5) * 20;
+                targetPositions[i] = currentPositions[i];
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+
+            // USE BASIC MATERIAL (No Shaders) to ensure visibility
+            const material = new THREE.PointsMaterial({
+                color: 0x00ffff,
+                size: 0.3,
+                sizeAttenuation: true
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function generateShapes() {
+            // Re-implementing simplified shapes
+            const makeBuffer = () => new Float32Array(PARTICLE_COUNT * 3);
+            
+            SHAPES.CLOUD = makeBuffer();
+            for(let i=0; i<PARTICLE_COUNT*3; i++) SHAPES.CLOUD[i] = (Math.random()-0.5) * 30;
+
+            SHAPES.SPHERE = makeBuffer();
+            for(let i=0; i<PARTICLE_COUNT; i++) {
+                const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+                const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+                const r = 8;
+                SHAPES.SPHERE[i*3] = r * Math.cos(theta) * Math.sin(phi);
+                SHAPES.SPHERE[i*3+1] = r * Math.sin(theta) * Math.sin(phi);
+                SHAPES.SPHERE[i*3+2] = r * Math.cos(phi);
+            }
+            
+            // Clone sphere for other shapes temporarily to avoid complex math errors
+            SHAPES.HEART = new Float32Array(SHAPES.SPHERE);
+            SHAPES.FACE = new Float32Array(SHAPES.SPHERE);
+        }
+
+        // --- MediaPipe ---
+        function initMediaPipe() {
+            if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                log("ERROR: Webcam not supported or blocked.");
+                return;
+            }
+
+            const videoElem = document.getElementById('input_video');
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 0, // Lower complexity for speed
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            hands.onResults((results) => {
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    const lm = results.multiHandLandmarks[0];
+                    // Update Hand Position (Inverted X)
+                    handX = (0.5 - lm[9].x) * 30;
+                    handY = (0.5 - lm[9].y) * 20;
+                    
+                    // Simple Gesture: Fist?
+                    const tipToWrist = Math.sqrt(Math.pow(lm[8].x-lm[0].x,2) + Math.pow(lm[8].y-lm[0].y,2));
+                    if(tipToWrist < 0.25) {
+                        if(currentGesture !== 'SPHERE') {
+                            log("Gesture: Fist (Sun)");
+                            currentGesture = 'SPHERE';
+                            particles.material.color.setHex(0xffaa00);
+                            targetPositions.set(SHAPES.SPHERE);
+                        }
+                    } else {
+                        if(currentGesture !== 'CLOUD') {
+                            log("Gesture: Open (Cloud)");
+                            currentGesture = 'CLOUD';
+                            particles.material.color.setHex(0x00ffff);
+                            targetPositions.set(SHAPES.CLOUD);
+                        }
+                    }
+                }
+            });
+
+            const cameraUtils = new Camera(videoElem, {
+                onFrame: async () => { await hands.send({image: videoElem}); },
+                width: 320, height: 240
+            });
+            cameraUtils.start().then(() => log("Camera Active.")).catch(e => log("Cam Error: "+e));
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Rotate Red Cube (Sanity Check)
+            if(testCube) {
+                testCube.rotation.x += 0.01;
+                testCube.rotation.y += 0.01;
+            }
+
+            // 2. Animate Particles
+            if(particles && currentPositions && targetPositions) {
+                const pos = particles.geometry.attributes.position.array;
+                for(let i=0; i < PARTICLE_COUNT*3; i++) {
+                    pos[i] += (targetPositions[i] - pos[i]) * 0.1;
+                }
+                
+                // Move entire system to hand
+                particles.position.x += (handX - particles.position.x) * 0.1;
+                particles.position.y += (handY - particles.position.y) * 0.1;
+
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>

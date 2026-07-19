@@ -6,72 +6,57 @@
     <title>University Department</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            scroll-behavior: smooth;
-        }
-        .hero-section {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-        .program-card, .testimonial-card, .career-card {
-            transition: all 0.3s ease;
-        }
-        .program-card:hover, .testimonial-card:hover, .career-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
-        .nav-link {
-            position: relative;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: #fff;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        .active-link::after {
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="css/global.css">
 </head>
 <body>
     <!-- Navigation -->
+    
+    <!-- Unified Responsive Navigation -->
     <nav id="navbar" class="fixed w-full z-50 transition-all duration-300">
         <div class="bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-lg">
             <div class="container mx-auto px-4 py-4">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <div class="flex items-center mb-4 md:mb-0">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mr-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path d="M12 14l9-5-9-5-9 5 9 5z" />
                                 <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                             </svg>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-bold">School of Mathematical Sciences</h1>
-                            <p class="text-sm text-blue-200">North Maharashtra University</p>
+                            <h1 class="text-xl md:text-2xl font-bold">School of Mathematical Sciences</h1>
+                            <p class="text-xs md:text-sm text-blue-200">North Maharashtra University</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap justify-center">
-                        <a href="index.html" class="nav-link active-link px-4 py-2 hover:text-blue-300 transition">Home</a>
-                        <a href="about.html" class="nav-link px-4 py-2 hover:text-blue-300 transition">About</a>
-                        <a href="programs.html" class="nav-link px-4 py-2 hover:text-blue-300 transition">Programs</a>
-                        <a href="contents.html" class="nav-link px-4 py-2 hover:text-blue-300 transition">Contents</a>
-                        <a href="faculty.html" class="nav-link px-4 py-2 hover:text-blue-300 transition">Faculty</a>
-                        <a href="contact.html" class="nav-link px-4 py-2 hover:text-blue-300 transition">Contact</a>
+                    
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="index.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">Home</a>
+                        <a href="about.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">About</a>
+                        <a href="programs.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">Programs</a>
+                        <a href="contents.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">Contents</a>
+                        <a href="faculty.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">Faculty</a>
+                        <a href="contact.html" class="nav-link px-3 py-2 hover:text-blue-300 transition">Contact</a>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <div class="md:hidden flex items-center">
+                        <button id="mobile-menu-button" class="text-white hover:text-blue-300 focus:outline-none p-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
+            </div>
+            <!-- Mobile Menu Panel -->
+            <div id="mobile-menu" class="md:hidden bg-indigo-900 px-4">
+                <a href="index.html" class="block py-2 border-b border-indigo-800 text-white">Home</a>
+                <a href="about.html" class="block py-2 border-b border-indigo-800 text-white">About</a>
+                <a href="programs.html" class="block py-2 border-b border-indigo-800 text-white">Programs</a>
+                <a href="contents.html" class="block py-2 border-b border-indigo-800 text-white">Contents</a>
+                <a href="faculty.html" class="block py-2 border-b border-indigo-800 text-white">Faculty</a>
+                <a href="contact.html" class="block py-2 text-white">Contact</a>
             </div>
         </div>
     </nav>
@@ -83,13 +68,13 @@
             <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">Discover a world-class education in Mathematical Sciences that prepares you for success.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="programs.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">Explore Programs</a>
-                <a href="Contacts.html" class="bg-transparent hover:bg-white text-white hover:text-blue-800 font-bold py-3 px-8 rounded-full border-2 border-white transition duration-300 transform hover:scale-105">Contact Us</a>
+                <a href="contact.html" class="bg-transparent hover:bg-white text-white hover:text-blue-800 font-bold py-3 px-8 rounded-full border-2 border-white transition duration-300 transform hover:scale-105">Contact Us</a>
             </div>
         </div>
     </section>
 
     <!-- Featured Programs -->
-    <section class="py-20 bg-gray-50">
+    <section  class="animate-on-scroll py-20 bg-gray-50">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Featured Programs</h2>
@@ -161,7 +146,7 @@
     </section>
 
     <!-- Excellence in Numbers Section (Restored) -->
-    <section class="py-20 bg-gradient-to-r from-blue-800 to-indigo-900 text-white">
+    <section  class="animate-on-scroll py-20 bg-gradient-to-r from-blue-800 to-indigo-900 text-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Excellence in Numbers</h2>
@@ -197,7 +182,7 @@
     </section>
 
     <!-- Testimonials Section (Restored) -->
-    <section class="py-20 bg-gray-50">
+    <section  class="animate-on-scroll py-20 bg-gray-50">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">What Our Students Say</h2>
@@ -260,7 +245,7 @@
     </section>
 
     <!-- Career Opportunities Section -->
-    <section class="py-20 bg-white">
+    <section  class="animate-on-scroll py-20 bg-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">Career Opportunities</h2>
@@ -388,5 +373,6 @@
             }
         });
     </script>
+    <script src="js/main.js"></script>
 </body>
 </html>
